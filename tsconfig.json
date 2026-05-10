@@ -1,0 +1,56 @@
+{
+  /**
+   * CONFIGURACIÓN DE COMPILACIÓN - RANDOMFATES BACKEND
+   * Basado en: Node.js + TypeScript + Prisma + Clean Architecture
+   */
+  "compilerOptions": {
+    /* --- Entorno y Compatibilidad --- */
+
+    // Define la versión de JavaScript a la que se transpilara el código.
+    // ES2022 es ideal para Node.js 18+ ya que soporta Top-Level Await y métodos modernos de clases.
+    "target": "ES2022",
+
+    // Especifica el sistema de generación de módulos.
+    // "commonjs" es el estándar actual para Node.js, garantizando compatibilidad con Prisma y la mayoría de librerías del stack.
+    "module": "commonjs",
+
+    /* --- Gestión de Directorios --- */
+
+    // Directorio raíz donde reside el código fuente (.ts).
+    // Alineado con la estructura modular propuesta: src/modules, src/shared, etc.
+    "rootDir": "src",
+
+    // Directorio donde se generará el código JavaScript listo para producción.
+    // Facilita el despliegue al separar la lógica de desarrollo de la de ejecución.
+    "outDir": "./dist",
+
+    /* --- Calidad y Rigor de Tipado --- */
+
+    // Habilita todas las comprobaciones de tipo estrictas.
+    // CRUCIAL para RandomFates: obliga a manejar nulls/undefineds y tipar cada DTO,
+    // evitando bugs en el motor de sorteos y transacciones.
+    "strict": true,
+
+    /* --- Interoperabilidad y Librerías --- */
+
+    // Permite la interoperabilidad entre módulos CommonJS y ES Modules.
+    // Necesario para importar librerías como 'express' o 'jsonwebtoken' sin conflictos de sintaxis.
+    "esModuleInterop": true,
+
+    // Omite la comprobación de tipos de los archivos de definición (.d.ts) de las librerías en node_modules.
+    // Acelera drásticamente el tiempo de compilación sin comprometer la seguridad de tu código propio.
+    "skipLibCheck": true,
+
+    /* --- Definiciones de Tipos Globales --- */
+
+    // Define qué tipos globales incluir. Al usar 'node', habilitas el tipado para
+    // módulos nativos como 'crypto' (esencial para tu Random Engine seguro).
+    "types": ["node"]
+  },
+
+  /* --- Alcance del Proyecto --- */
+
+  // Indica a TypeScript que solo debe procesar lo que esté dentro de 'src'.
+  // Evita que el compilador intente procesar scripts de configuración o archivos de la raíz.
+  "include": ["src"]
+}
