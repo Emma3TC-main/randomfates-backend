@@ -1,0 +1,68 @@
+@startuml
+' --- Configuración Estética ---
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 10
+skinparam dpi 120
+skinparam arrow {
+    Thickness 1.5
+    Color #455A64
+    FontColor #263238
+}
+
+' --- Estilos de Nodos ---
+skinparam activity {
+    BackgroundColor #F8F9FA
+    BorderColor #90A4AE
+    FontColor #263238
+}
+
+header <font color=gray>Workflow Automatizado CI/CD</font>
+footer <font color=gray>DevOps Pipeline - 2026</font>
+
+start
+
+: <&code> **Developer push code**;
+note right: Trigger: Webhook
+
+: <&media-play> **Trigger CI/CD Pipeline**;
+
+partition #E3F2FD "BUILD (Compilación)" {
+    : <&list> Install dependencies;
+    : <&monitor> Build Frontend;
+    : <&cog> Build Backend;
+    : <&box> **Create Docker Images**;
+}
+
+partition #F1F8E9 "TEST (Calidad)" {
+    : <&check> Run Unit Tests;
+    : <&list-rich> Run Lint;
+    : <&loop-square> Run Integration Tests;
+}
+
+if (**¿Tests OK?**) then (<font color=green><b>Sí</b></font>)
+
+    partition #FFF3E0 "DEPLOY STAGING" {
+        : <&cloud-upload> Deploy to Staging;
+        : <&people> **Run QA validation**;
+    }
+
+    if (**¿Aprobado por QA?**) then (<font color=green><b>Sí</b></font>)
+        partition #E8F5E9 "DEPLOY PRODUCTION" {
+            : <&info> **Deploy to Production**;
+            : <&layers> Run DB Migrations;
+            : <&reload> Restart containers;
+        }
+        : <&circle-check> **Pipeline Completado**;
+        stop
+    else (<font color=red>No</font>)
+        : <&wrench> **Fix issues**;
+        stop
+    endif
+
+else (<font color=red>No</font>)
+    : <&circle-x> **Fix errors**;
+    stop
+endif
+
+@enduml

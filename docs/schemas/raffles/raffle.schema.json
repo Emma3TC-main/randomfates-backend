@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Raffle",
+  "type": "object",
+  "required": [
+    "id",
+    "userId",
+    "title",
+    "type",
+    "state",
+    "isPublic",
+    "createdAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "userId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "type": {
+      "enum": [
+        "ROULETTE",
+        "SLOT",
+        "RANDOM_PICKER"
+      ]
+    },
+    "state": {
+      "enum": [
+        "DRAFT",
+        "ACTIVE",
+        "FINISHED",
+        "CANCELLED"
+      ]
+    },
+    "configuration": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "metrics": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "publicToken": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "isPublic": {
+      "type": "boolean"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

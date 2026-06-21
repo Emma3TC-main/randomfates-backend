@@ -1,0 +1,172 @@
+@startuml
+!define RECT_PADD 20
+
+skinparam {
+    BackgroundColor transparent
+    Shadowing true
+    RoundCorner 12
+    DefaultFontName "Montserrat", "Segoe UI", sans-serif
+    DefaultFontSize 13
+    TitleFontSize 24
+    TitleFontColor #1A202C
+}
+
+skinparam package {
+    BackgroundColor #FEFEFE
+    BorderColor #CBD5E0
+    BorderThickness 2
+    FontColor #2D3748
+    FontSize 16
+    FontStyle bold
+}
+
+skinparam component {
+    BackgroundColor #FFFFFF
+    BorderColor #A0AEC0
+    FontColor #4A5568
+    RoundCorner 8
+}
+
+' =====================================================
+' COLORES POR DOMINIO (Paleta Profesional)
+' =====================================================
+
+' Identity: Azul Suave
+skinparam package<<Identity>> {
+    BackgroundColor #EBF8FF
+    BorderColor #4299E1
+    FontColor #2A4365
+}
+
+' Core: Naranja Suave
+skinparam package<<Core>> {
+    BackgroundColor #FFFAF0
+    BorderColor #ED8936
+    FontColor #7B341E
+}
+
+' Infra: Púrpura Suave
+skinparam package<<Infra>> {
+    BackgroundColor #FAF5FF
+    BorderColor #9F7AEA
+    FontColor #44337A
+}
+
+' Shared: Gris Suave
+skinparam package<<Shared>> {
+    BackgroundColor #F7FAFC
+    BorderColor #A0AEC0
+    FontColor #2D3748
+}
+
+' Otros Módulos: Teja Suave
+skinparam package<<Module>> {
+    BackgroundColor #E6FFFA
+    BorderColor #38B2AC
+    FontColor #234E52
+}
+
+skinparam arrow {
+    Color #718096
+    Thickness 1.5
+}
+
+title RandomFates Backend - Modular Architecture
+
+' =====================================================
+' MODULOS
+' =====================================================
+
+package "Identity & Access" <<Identity>> {
+  [Auth]
+  [Users]
+  [Sessions]
+}
+
+package "Billing System" <<Module>> {
+  [Plans]
+  [Subscriptions]
+  [Payments]
+  [Usage Metrics]
+}
+
+package "Raffle Core" <<Core>> {
+  [Raffles]
+  [Participants]
+  [Prizes]
+  [Import Jobs]
+}
+
+package "Execution Engine" <<Core>> {
+  [Executions]
+  [Results]
+  [Winners]
+  [Random Engine]
+}
+
+package "Realtime & Events" <<Module>> {
+  [Realtime]
+  [WebSockets]
+  [Domain Events]
+}
+
+package "Observability" <<Module>> {
+  [Audit Logs]
+  [Monitoring]
+}
+
+package "Shared Kernel" <<Shared>> {
+  [DTOs]
+  [Enums]
+  [Exceptions]
+  [Utils]
+}
+
+package "Infrastructure" <<Infra>> {
+  database "PostgreSQL" #FFFFFF
+  [Prisma ORM]
+  [JWT]
+}
+
+' =====================================================
+' DEPENDENCIAS (Lógica original mantenida)
+' =====================================================
+
+[Auth] --> [Users]
+[Auth] --> [JWT]
+[Sessions] --> [Users]
+
+[Subscriptions] --> [Plans]
+[Payments] --> [Subscriptions]
+[Usage Metrics] ..> [Users]
+
+[Raffles] --> [Participants]
+[Raffles] --> [Prizes]
+[Raffles] --> [Executions]
+[Import Jobs] ..> [Participants]
+
+[Executions] --> [Random Engine]
+[Executions] --> [Results]
+[Results] --> [Winners]
+
+[Executions] ..> [Realtime]
+[Executions] ..> [Domain Events]
+
+[Audit Logs] ..> [Users]
+
+[Raffles] ..> [PostgreSQL]
+[Executions] ..> [PostgreSQL]
+[Payments] ..> [PostgreSQL]
+
+[Prisma ORM] --> [PostgreSQL]
+
+' =====================================================
+' SHARED KERNEL (Lógica original mantenida)
+' =====================================================
+
+[Auth] ..> [DTOs]
+[Raffles] ..> [Enums]
+[Executions] ..> [Exceptions]
+[Realtime] ..> [Utils]
+
+@enduml

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CreateParticipantRequest",
+  "type": "object",
+  "required": [
+    "fullName",
+    "identifier"
+  ],
+  "properties": {
+    "fullName": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 150
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "source": {
+      "enum": [
+        "MANUAL",
+        "CSV",
+        "API"
+      ],
+      "default": "MANUAL"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TokenResponse",
+  "type": "object",
+  "required": [
+    "user",
+    "tokens"
+  ],
+  "properties": {
+    "user": {
+      "type": "object",
+      "required": [
+        "id",
+        "email",
+        "role",
+        "subscriptionStatus"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "role": {
+          "enum": [
+            "ADMIN",
+            "USER",
+            "PREMIUM"
+          ]
+        },
+        "subscriptionStatus": {
+          "enum": [
+            "ACTIVE",
+            "EXPIRED",
+            "CANCELLED"
+          ]
+        }
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "required": [
+        "accessToken",
+        "refreshToken",
+        "tokenType",
+        "expiresIn"
+      ],
+      "properties": {
+        "accessToken": {
+          "type": "string"
+        },
+        "refreshToken": {
+          "type": "string"
+        },
+        "tokenType": {
+          "const": "Bearer"
+        },
+        "expiresIn": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

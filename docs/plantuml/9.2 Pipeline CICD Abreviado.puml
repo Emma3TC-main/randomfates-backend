@@ -1,0 +1,53 @@
+@startuml
+' --- Configuración Visual ---
+skinparam shadowing false
+skinparam roundcorner 10
+skinparam dpi 120
+
+' Forzar que el motor sepa que es de componentes/despliegue
+allowmixing
+
+' Estilos base
+skinparam component {
+    BackgroundColor #F8F9FA
+    BorderColor #B0BEC5
+    FontColor #263238
+}
+
+header Arquitectura CI/CD
+footer DevOps - 2026
+
+' --- Elementos ---
+' Usamos la sintaxis más básica: component "Nombre" as ID
+component "Developer\nLocal Env" as Dev #E3F2FD
+
+rectangle "Automation_Zone" #F1F3F5 {
+    component "GitHub_Repo" as GIT #D1D5DA
+    component "GitHub_Actions" as CI #FFFFFF
+}
+
+component "Docker_Registry" as REG #B3E5FC
+
+rectangle "Production_Zone" #F1F3F5 {
+    component "Staging_Server" as STG #E8F5E9
+    component "Production_Server" as PROD #FFEBEE
+}
+
+' --- Relaciones ---
+Dev -right-> GIT : push
+GIT -right-> CI : trigger
+
+note bottom of CI
+  Steps: Build & Test
+end note
+
+CI -down-> REG : push image
+
+REG -down-> STG : pull
+REG -down-> PROD : pull
+
+' Colores de flechas directos
+CI -[#blue]down-> STG : deploy dev
+CI -[#red]down-> PROD : deploy main
+
+@enduml

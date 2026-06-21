@@ -1,0 +1,17 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(user, "Organizador", "Crea y ejecuta sorteos")
+Person(admin, "Administrador", "Gestiona sistema")
+
+System(system, "Plataforma de Sorteos SaaS", "Sistema de sorteos en tiempo real")
+
+System_Ext(payment, "Pasarela de pago", "Procesa pagos")
+System_Ext(social, "Redes sociales", "Compartir resultados")
+
+Rel(user, system, "Usa")
+Rel(admin, system, "Administra")
+Rel(system, payment, "Procesa pagos")
+Rel(system, social, "Comparte resultados")
+
+@enduml

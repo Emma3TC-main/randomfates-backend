@@ -1,0 +1,62 @@
+@startuml
+' --- Configuración Visual ---
+skinparam {
+    Style strictuml
+    RoundCorner 8
+    DefaultFontName "Verdana"
+    DefaultFontSize 12
+}
+
+' Estilos específicos para los estados
+skinparam state {
+    BackgroundColor #F8F9FA
+    BorderColor #2D3E50
+    ArrowColor #546E7A
+    
+    ' Estilos personalizados mediante <<Stereotypes>>
+    BackgroundColor<<Main>> #E3F2FD
+    BorderColor<<Main>> #1976D2
+    BackgroundColor<<Action>> #FFF8E1
+    BorderColor<<Action>> #FFB300
+}
+
+' --- Definición de Flujo ---
+
+[*] -down-> Landing : Acceso URL
+
+state Landing {
+    [*] --> HeroSection
+    HeroSection -down-> Beneficios
+    HeroSection -right-> Registro : "Comenzar"
+}
+
+Landing -down-> Auth : Login / Registro
+Auth -down-> Dashboard : Éxito
+
+state Dashboard <<Main>> {
+    [*] --> ListaSorteos
+    ListaSorteos -right-> Configurador : "Nuevo Sorteo"
+    ListaSorteos -down-> Historial : "Ver pasados"
+}
+
+state Configurador {
+    [*] --> AjustesBasicos
+    AjustesBasicos -down-> GestionParticipantes : "Siguiente"
+    GestionParticipantes -right-> VistaPrevia : "Validar"
+}
+
+VistaPrevia -down-> ModalEjecucion <<Action>> : "¡Sortear!"
+
+state ModalEjecucion {
+    [*] --> AnimacionSorteo
+    AnimacionSorteo -down-> ResultadoGanador : [Success]
+    AnimacionSorteo -right-> ManejoError : [Fail]
+}
+
+ResultadoGanador -down-> Compartir : "Publicar"
+ResultadoGanador -left-> Dashboard : "Cerrar"
+
+Dashboard -right-> Cuenta : "Mi Perfil"
+Cuenta -down-> Pago : "Mejorar a Premium"
+
+@enduml

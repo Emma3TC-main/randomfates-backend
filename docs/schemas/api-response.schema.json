@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ApiResponse",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/success"
+    },
+    {
+      "$ref": "#/$defs/error"
+    }
+  ],
+  "$defs": {
+    "success": {
+      "type": "object",
+      "required": [
+        "success",
+        "message",
+        "data"
+      ],
+      "properties": {
+        "success": {
+          "const": true
+        },
+        "message": {
+          "type": "string"
+        },
+        "data": {},
+        "meta": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "required": [
+        "success",
+        "message",
+        "error"
+      ],
+      "properties": {
+        "success": {
+          "const": false
+        },
+        "message": {
+          "type": "string"
+        },
+        "error": {
+          "type": "object",
+          "required": [
+            "code"
+          ],
+          "properties": {
+            "code": {
+              "type": "string"
+            },
+            "details": {}
+          }
+        }
+      }
+    }
+  }
+}

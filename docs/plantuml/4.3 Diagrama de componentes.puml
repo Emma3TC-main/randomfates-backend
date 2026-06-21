@@ -1,0 +1,29 @@
+@startuml
+skinparam style strict
+
+rectangle "Client" as C {
+  [Frontend] as FE
+}
+
+rectangle "Application Server" as AS {
+  [API] as A
+}
+
+rectangle "Engine Server" as ES {
+  [RandomEngine] as RE
+}
+
+rectangle "Web Socket Server" as WSS {
+  [WebSocket] as WS
+}
+
+rectangle "Database Server" as DBS {
+  [Database] as D
+}
+
+FE ..> A : 1. Request
+A ..> RE : 2. Generate Random
+A ..> D : 3. CRUD
+A ..> WS : 4. Send Message
+
+@enduml

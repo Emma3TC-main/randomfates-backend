@@ -1,0 +1,98 @@
+@startuml
+' --- Configuración Estética Estilo Bizagi / Profesional ---
+skinparam DefaultFontName "Segoe UI", "Arial"
+skinparam DefaultFontSize 12
+skinparam TitleFontSize 18
+skinparam ConditionStyle Diamond
+skinparam Shadowing false
+skinparam RoundCorner 10
+
+' Colores de Actividades y Nodos
+skinparam Activity {
+    BackgroundColor #F3F9FF
+    BorderColor #2C88D9
+    FontColor #333333
+    BarColor #2C88D9
+}
+
+' Colores de Decisiones (Diamantes)
+skinparam Decision {
+    BackgroundColor #FFF9E6
+    BorderColor #E6A23C
+}
+
+' Estilos de Particiones (Swimlanes/Pools)
+skinparam Partition {
+    BorderColor #DCDFE6
+    BackgroundColor #FBFBFC
+    FontColor #606266
+}
+
+' Estilos de Notas
+skinparam Note {
+    BackgroundColor #FEF0F0
+    BorderColor #F56C6C
+    FontSize 11
+}
+
+title Diagrama de Procesos de Negocio (BPMN) - Gestión y Ejecución de Sorteos
+
+start
+
+:Acceso al Sistema;
+note right: Validación de sesión (JWT)
+
+if (¿Usuario Autenticado?) then (Sí)
+    :Acceso a Dashboard;
+else (No)
+    :Sesión Temporal (Invitado);
+endif
+
+partition "**Fase 1:** Configuración" {
+    :Crear instancia de Sorteo;
+    :Definir reglas y premios;
+    note left: Configuración de UI\n(Ruleta/Rifa)
+}
+
+partition "**Fase 2:** Gestión de Participantes" {
+    :Carga de Participantes;
+    if (¿Carga mediante Archivo?) then (Sí)
+        :Validar Nivel de Suscripción;
+        if (¿Es Premium?) then (Sí)
+            :Procesar CSV/XLSX (ETL);
+            :Limpieza y Normalización;
+        else (No)
+            :Notificar restricción Premium; <<#FFEBEE>>
+            :Requerir Ingreso Manual;
+        endif
+    else (Manual)
+        :Registro uno a uno;
+    endif
+}
+
+partition "**Fase 3:** Motor de Ejecución (Core)" {
+    :Validar Integridad de Datos;
+    if (¿Datos Aptos?) then (Sí)
+        :Generar Snapshot de Datos;
+        note right: Bloqueo de mutaciones
+        
+        :Ejecutar Algoritmo Aleatorio;
+        :Persistir Resultado en DB;
+        :Firmar Resultado (Hash Evidencia);
+        
+        fork
+            :Emitir Evento WebSocket;
+        fork again
+            :Notificar al Frontend;
+        end fork
+        
+        :Visualizar Animación y Ganador;
+    else (No)
+        :Emitir Alerta de Error; <<#FFEBEB>>
+        detach
+    endif
+}
+
+:Compartir Evidencia Social;
+stop
+@enduml

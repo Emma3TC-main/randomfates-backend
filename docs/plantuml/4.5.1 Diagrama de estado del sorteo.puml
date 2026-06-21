@@ -1,0 +1,39 @@
+@startuml
+skinparam {
+    Style strictuml
+    Shadowing true
+    RoundCorner 15
+    DefaultFontName "Segoe UI", "Arial", sans-serif
+    DefaultFontSize 12
+}
+
+' Colores de Estados
+skinparam state {
+    BackgroundColor #FFFFFF-#E3F2FD
+    BorderColor #1565C0
+    FontColor #0D47A1
+    AttributeFontSize 11
+}
+
+title Ciclo de Vida del Sorteo
+
+[*] --> CREADO : Instanciar
+state CREADO #F5F5F5
+state CONFIGURADO #E1F5FE
+state LISTO #E8F5E9
+state EN_EJECUCION #FFF3E0
+state FINALIZADO #E8EAF6
+state CANCELADO #FFEBEE
+
+CREADO --> CONFIGURADO : Definir reglas y premios
+CONFIGURADO --> LISTO : Validar config + participantes
+
+LISTO --> EN_EJECUCION : Iniciar ejecución activa
+
+EN_EJECUCION --> FINALIZADO : Éxito: Resultado persistido
+EN_EJECUCION --> CANCELADO : Error crítico / Inconsistencia
+
+CANCELADO --> LISTO : Reintentar / Corregir
+
+FINALIZADO --> [*]
+@enduml

@@ -1,0 +1,96 @@
+@startuml
+' --- Configuración Estética Pro ---
+!define ICONURL https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/icons
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam dpi 150
+skinparam fontname "Verdana"
+skinparam nodesep 80
+skinparam ranksep 60
+
+' --- Definición de Colores ---
+!define DOCKER_COLOR #2496ED
+!define DB_COLOR #336791
+!define RE_COLOR #61DAFB
+!define NODE_COLOR #339933
+
+' --- Estilos de Flechas y Líneas ---
+skinparam arrow {
+    Thickness 1.5
+    Color #546E7A
+    FontColor #263238
+    FontSize 11
+}
+
+' --- Arquitectura ---
+
+header <font color=gray>Arquitectura de Microservicios - Docker Stack</font>
+footer <font color=gray>Generado para Marcelo - v2.0</font>
+
+node " <&person> Usuario Final" as Client #F8F9FA {
+    component "<&browser> **Navegador Web**\n(Chrome/Firefox)" as User #FFFFFF
+}
+
+cloud " <&cloud> Tráfico Externo" as Internet #E3F2FD {
+    component "<b>Seguridad SSL/TLS</b>\nPuerto 443" as Protocols #BBDEFB
+}
+
+node " <&box> Servidor Docker Host (Ubuntu/Debian)" <<Docker>> as Host #E1F5FE {
+
+    node " <&list> Docker Network: <b>app-network</b>" <<Internal>> as Net #F1F8E9 {
+
+        package "Frontend Tier" #E8F5E9 {
+            component "<&monitor> **React App**\nWeb Interface" as FE #C8E6C9
+            portout "P3000" as PFE
+        }
+
+        package "API Tier" #FFF3E0 {
+            component "<&bolt> **Node.js API**\nExpress Framework" as BE #FFE0B2
+            portin "P5000" as PBE
+            portout " " as PBE_OUT
+        }
+
+        package "Data Tier" #F3E5F5 {
+            component "<&layers> **PostgreSQL**\nPrimary Storage" as DB #E1BEE7
+            component "<&timer> **Redis**\nCache & Pub/Sub" as REDIS #FFEBEE
+        }
+    }
+
+    node " <&hard-drive> Persistencia Local" as Vol_Node #ECEFF1 {
+        database "<&folder> **db_data**\n(Persistent SQL)" as DBV #CFD8DC
+        database "<&file> **app_logs**\n(JSON Logs)" as LOGV #CFD8DC
+    }
+}
+
+' --- Relaciones y Flujos de Datos ---
+User -down-> Protocols : " <&key> HTTPS Request"
+Protocols -right-> PFE : " Proxy Pass"
+PFE -down-> FE
+
+FE -down-> PBE : " <&transfer> JSON/REST"
+PBE -down-> BE
+
+BE -right-> DB : " <&loop-square> Query (5432)"
+BE -left-> REDIS : " <&bolt> Cache (6379)"
+
+DB .down.> DBV : " Mount: /var/lib/postgresql"
+BE .down.> LOGV : " Mount: /app/logs"
+
+' --- Notas Técnicas ---
+note top of BE #FFF9C4
+  <b>Lógica de Negocio</b>
+  * Auth (JWT)
+  * WebSockets (Socket.io)
+  * Middlewares
+end note
+
+legend right
+  |= Color |= Capa |
+  |<#C8E6C9>| Frontend (React) |
+  |<#FFE0B2>| Backend (Node.js) |
+  |<#E1BEE7>| Database (Postgres) |
+  |<#FFEBEE>| Cache (Redis) |
+endlegend
+
+@enduml

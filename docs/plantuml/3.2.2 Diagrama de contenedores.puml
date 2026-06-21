@@ -1,0 +1,17 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+System_Boundary(system, "Plataforma de Sorteos - RandomFates") {
+
+Container(frontend, "Frontend", "React", "Interfaz de usuario")
+Container(backend, "Backend API", "Node.js", "Lógica de negocio + WS")
+Container(db, "Database", "PostgreSQL", "Persistencia")
+Container(redis, "Redis", "Cache / PubSub", "Eventos tiempo real")
+
+}
+
+Rel(frontend, backend, "HTTP / WS")
+Rel(backend, db, "SQL")
+Rel(backend, redis, "Pub/Sub")
+
+@enduml

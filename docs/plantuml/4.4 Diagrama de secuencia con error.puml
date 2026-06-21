@@ -1,0 +1,73 @@
+@startuml
+' == Configuración de Estilo ==
+skinparam {
+    Style strictuml
+    RoundCorner 15
+    ParticipantPadding 30
+    BoxPadding 10
+    SequenceMessageAlignment center
+    DefaultFontName "Segoe UI", "Arial", sans-serif
+    DefaultFontSize 13
+}
+
+' Colores de los elementos
+skinparam actor {
+    BackgroundColor #E3F2FD
+    BorderColor #1565C0
+}
+
+skinparam participant {
+    BackgroundColor #FFFFFF
+    BorderColor #455A64
+    FontStyle bold
+}
+
+skinparam sequence {
+    ArrowColor #263238
+    LifeLineBorderColor #607D8B
+    GroupBodyBackgroundColor #ECEFF166 ' Transparencia para el bloque ALT
+    GroupBorderColor #B0BEC5
+}
+
+' == Definición de Componentes con Iconos ==
+actor "Usuario" as User #E1F5FE
+
+box "Sistema Backend" #F8F9FA
+    participant "API Gateway" as API << (I,#4FC3F7) >>
+    participant "Execution\nEngine" as EXEC << (P,#81C784) >>
+    database "Persistence\n(DB)" as DB << (D,#FFB74D) >>
+    participant "WebSocket\nService" as WS << (S,#BA68C8) >>
+end box
+
+' == Flujo de Lógica ==
+
+User -> API : ejecutar sorteo
+activate API
+
+API -> EXEC : iniciar
+activate EXEC
+
+EXEC -> DB : validar datos
+activate DB
+DB --> EXEC : validación completa
+deactivate DB
+
+alt #FFF3E0 Error detectado
+    EXEC -> DB : actualizar estado: CANCELADO
+    activate DB
+    deactivate DB
+    
+    EXEC -> WS : emitir evento error
+    activate WS
+    WS --> User : notificación (Socket)
+    deactivate WS
+    
+    API --> User : HTTP 400/500 Error
+else Éxito
+    EXEC --> API : proceso OK
+end
+
+deactivate EXEC
+deactivate API
+
+@enduml

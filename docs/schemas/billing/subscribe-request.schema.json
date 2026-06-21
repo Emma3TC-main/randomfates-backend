@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SubscribeRequest",
+  "type": "object",
+  "required": [
+    "planId"
+  ],
+  "properties": {
+    "planId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "months": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 24,
+      "default": 1
+    }
+  },
+  "additionalProperties": false
+}

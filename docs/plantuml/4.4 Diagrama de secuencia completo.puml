@@ -1,0 +1,118 @@
+@startuml
+' == Configuración Estética de Alto Nivel ==
+skinparam {
+    Style strictuml
+    Shadowing true
+    RoundCorner 12
+    ParticipantPadding 25
+    BoxPadding 20
+    SequenceMessageAlignment center
+    DefaultFontName "Segoe UI", "Arial", sans-serif
+    DefaultFontSize 12
+}
+
+' Paleta: Azules para lógica, Naranjas para motor, Verdes para UI
+skinparam actor {
+    BackgroundColor #E1F5FE-#B3E5FC
+    BorderColor #01579B
+}
+
+skinparam participant {
+    BackgroundColor #FFFFFF-#F5F5F5
+    BorderColor #263238
+    FontColor #263238
+    FontStyle bold
+}
+
+skinparam sequence {
+    ArrowColor #263238
+    LifeLineBorderColor #1565C0
+    LifeLineBackgroundColor #E3F2FD
+    GroupBodyBackgroundColor #ECEFF166
+    GroupHeaderFontColor #1565C0
+    GroupBorderColor #B0BEC5
+}
+
+' == Definición de Componentes por Capas ==
+actor "Organizador" as Org
+
+box "Frontend Layer" #F1F8E9
+    participant "Web UI (FE)" as FE << (F,#8BC34A) >>
+end box
+
+box "Service Layer" #E3F2FD
+    participant "API Gateway" as API << (A,#03A9F4) >>
+    participant "Auth Service" as AUTH << (S,#4FC3F7) >>
+    participant "Raffle Mgr" as RAFFLE << (S,#4FC3F7) >>
+end box
+
+box "Engine Layer" #FFF3E0
+    participant "Execution Engine" as EXEC << (E,#FF9800) >>
+    participant "RNG Generator" as RNG << (G,#FFB74D) >>
+end box
+
+database "Persistence (DB)" as DB #ECEFF1
+participant "WebSocket" as WS << (W,#9575CD) >>
+
+' == Inicio del Flujo ==
+
+Org -> FE : Iniciar sorteo
+activate FE
+
+FE -> API : POST execute (JWT)
+activate API
+
+API -> AUTH : validar JWT
+activate AUTH
+AUTH --> API : OK
+deactivate AUTH
+
+API -> RAFFLE : validar estado
+activate RAFFLE
+RAFFLE -> DB : get raffle/participantes
+activate DB
+DB --> RAFFLE : data
+deactivate DB
+RAFFLE --> API : validación OK
+deactivate RAFFLE
+
+API -> EXEC : crear ejecución
+activate EXEC
+
+' --- Bloque de Decisión ---
+alt #FFF3E0 Error en validación de datos
+    EXEC -> DB : actualizar estado: CANCELADO
+    activate DB
+    deactivate DB
+    
+    EXEC -> WS : emitir error
+    activate WS
+    WS --> FE : notificación error
+    deactivate WS
+    
+    API --> FE : HTTP 400 Error
+    
+else #F1F8E9 Flujo Exitoso
+    EXEC -> RNG : generar ganador
+    activate RNG
+    RNG --> EXEC : winner ID
+    deactivate RNG
+
+    EXEC -> DB : guardar resultado & actualizar estado
+    activate DB
+    deactivate DB
+
+    EXEC -> WS : emitir evento éxito
+    activate WS
+    WS --> FE : push result
+    deactivate WS
+
+    FE -> FE : animación de éxito
+    API --> FE : HTTP 200 (resultado)
+end
+
+deactivate EXEC
+deactivate API
+deactivate FE
+
+@enduml

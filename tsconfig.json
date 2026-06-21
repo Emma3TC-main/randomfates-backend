@@ -14,6 +14,8 @@
     // "commonjs" es el estándar actual para Node.js, garantizando compatibilidad con Prisma y la mayoría de librerías del stack.
     "module": "commonjs",
 
+    "moduleResolution": "node",
+
     /* --- Gestión de Directorios --- */
 
     // Directorio raíz donde reside el código fuente (.ts).
@@ -45,7 +47,13 @@
 
     // Define qué tipos globales incluir. Al usar 'node', habilitas el tipado para
     // módulos nativos como 'crypto' (esencial para tu Random Engine seguro).
-    "types": ["node"]
+    "types": ["node"],
+
+    /* ========================
+       FIX TS 6 / PRISMA / NODE
+    ========================= */
+
+    "ignoreDeprecations": "6.0"
   },
 
   /* --- Alcance del Proyecto --- */

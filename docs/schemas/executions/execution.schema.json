@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Execution",
+  "type": "object",
+  "required": [
+    "id",
+    "raffleId",
+    "status",
+    "startedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "raffleId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "status": {
+      "enum": [
+        "PENDING",
+        "VALIDATING",
+        "IN_PROGRESS",
+        "EMITTING_RESULT",
+        "SUCCESS",
+        "FAILED",
+        "ABORTED"
+      ]
+    },
+    "seedHash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "durationMs": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "startedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "finishedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    }
+  }
+}

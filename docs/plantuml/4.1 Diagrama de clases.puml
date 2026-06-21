@@ -1,0 +1,302 @@
+@startuml
+' --- CONFIGURACIÓN DE ESTILO ---
+skinparam style strictuml
+skinparam shadowing false
+skinparam roundcorner 5
+skinparam classAttributeIconSize 0
+skinparam nodesep 60
+skinparam ranksep 70
+skinparam linetype ortho
+
+' --- COLORES Y FUENTES ---
+skinparam DefaultFontName "Verdana"
+skinparam DefaultFontSize 12
+skinparam TitleFontSize 18
+
+skinparam class {
+    BackgroundColor White
+    ArrowColor #2C3E50
+    BorderColor #2C3E50
+    HeaderBackgroundColor #ECEFF1
+    AttributeFontSize 11
+}
+
+skinparam enum {
+    BackgroundColor #F8F9FA
+    BorderColor #607D8B
+    HeaderBackgroundColor #CFD8DC
+}
+
+hide circle
+
+title Diagrama de Clases: Sistema RandomFates
+
+' =====================================================
+' ENUMERACIONES (Sintaxis Corregida)
+' =====================================================
+package "Enums" <<Folder>> {
+    enum UserRole {
+        ADMIN
+        USER
+        PREMIUM
+    }
+    enum SubscriptionStatus {
+        ACTIVE
+        EXPIRED
+        CANCELLED
+    }
+    enum RaffleState {
+        DRAFT
+        ACTIVE
+        FINISHED
+        CANCELLED
+    }
+    enum RaffleType {
+        ROULETTE
+        SLOT
+        RANDOM_PICKER
+    }
+    enum ExecutionStatus {
+        SUCCESS
+        FAILED
+        ABORTED
+    }
+    enum PaymentStatus {
+        SUCCESS
+        FAILED
+        PENDING
+    }
+    enum ParticipantSource {
+        MANUAL
+        CSV
+        API
+    }
+}
+
+' =====================================================
+' IDENTIDAD Y SEGURIDAD
+' =====================================================
+package "Identity & Security" #F1F8E9 {
+    class User {
+        +id: UUID
+        +email: String
+        +passwordHash: String
+        +role: UserRole
+        +subscriptionStatus: SubscriptionStatus
+        +isActive: Boolean
+        +createdAt: DateTime
+        +updatedAt: DateTime
+        +deletedAt: DateTime
+        --
+        +createRaffle()
+        +upgradeSubscription()
+        +authenticate()
+    }
+
+    class Session {
+        +id: UUID
+        +refreshTokenHash: String
+        +expiresAt: DateTime
+        +revokedAt: DateTime
+        +createdAt: DateTime
+        --
+        +revoke()
+        +isExpired()
+    }
+}
+
+' =====================================================
+' SUSCRIPCIONES Y FACTURACIÓN
+' =====================================================
+package "Billing System" #E3F2FD {
+    class Plan {
+        +id: UUID
+        +name: String
+        +price: Decimal
+        +features: JSON
+        +createdAt: DateTime
+    }
+
+    class Subscription {
+        +id: UUID
+        +startsAt: DateTime
+        +endsAt: DateTime
+        +isActive: Boolean
+        +createdAt: DateTime
+        --
+        +activate()
+        +cancel()
+        +isExpired()
+    }
+
+    class Payment {
+        +id: UUID
+        +transactionReference: String
+        +amount: Decimal
+        +currency: String
+        +status: PaymentStatus
+        +gatewayResponse: JSON
+        +createdAt: DateTime
+        --
+        +processPayment()
+        +validateGatewayResponse()
+    }
+
+    class UsageMetric {
+        +id: UUID
+        +metricType: String
+        +metricValue: Integer
+        +periodStart: DateTime
+        +periodEnd: DateTime
+        --
+        +incrementUsage()
+    }
+}
+
+' =====================================================
+' CORE DE SORTEOS
+' =====================================================
+package "Raffle Core" #FFF3E0 {
+    class Raffle {
+        +id: UUID
+        +title: String
+        +description: String
+        +type: RaffleType
+        +state: RaffleState
+        +configuration: JSON
+        +metrics: JSON
+        +publicToken: String
+        +isPublic: Boolean
+        +createdAt: DateTime
+        +updatedAt: DateTime
+        +deletedAt: DateTime
+        --
+        +validateConfiguration()
+        +publish()
+        +finish()
+    }
+
+    class Prize {
+        +id: UUID
+        +name: String
+        +description: String
+        +quantity: Integer
+        +createdAt: DateTime
+    }
+
+    class Participant {
+        +id: UUID
+        +fullName: String
+        +identifier: String
+        +email: String
+        +source: ParticipantSource
+        +metadata: JSON
+        +createdAt: DateTime
+        +updatedAt: DateTime
+        +deletedAt: DateTime
+        --
+        +validateData()
+    }
+
+    class ImportJob {
+        +id: UUID
+        +filename: String
+        +status: String
+        +totalRecords: Integer
+        +processedRecords: Integer
+        +errors: JSON
+        +createdAt: DateTime
+        --
+        +processImport()
+        +generateReport()
+    }
+}
+
+' =====================================================
+' EJECUCIÓN Y RESULTADOS
+' =====================================================
+package "Execution Engine" #F3E5F5 {
+    class Execution {
+        +id: UUID
+        +status: ExecutionStatus
+        +seedHash: String
+        +durationMs: Integer
+        +startedAt: DateTime
+        +finishedAt: DateTime
+        --
+        +startExecution()
+        +generateSeed()
+        +lockParticipants()
+        +finalizeExecution()
+    }
+
+    class Result {
+        +id: UUID
+        +verificationHash: String
+        +createdAt: DateTime
+        --
+        +generateVerificationHash()
+        +verifyIntegrity()
+    }
+
+    class ResultWinner {
+        +id: UUID
+        +position: Integer
+        +createdAt: DateTime
+    }
+}
+
+' =====================================================
+' AUDITORÍA Y EVENTOS
+' =====================================================
+package "Observability" #ECEFF1 {
+    class AuditLog {
+        +id: UUID
+        +entityType: String
+        +entityId: UUID
+        +action: String
+        +payload: JSON
+        +ipAddress: String
+        +userAgent: String
+        +createdAt: DateTime
+        --
+        +registerEvent()
+    }
+
+    class RealtimeEvent {
+        +id: UUID
+        +eventType: String
+        +payload: JSON
+        +createdAt: DateTime
+        --
+        +emit()
+    }
+}
+
+' =====================================================
+' RELACIONES
+' =====================================================
+
+User "1" o-- "0..*" Session : owns
+User "1" o-- "0..*" Subscription : subscribes
+Plan "1" o-- "0..*" Subscription : defines
+Subscription "1" o-- "0..*" Payment : generates
+User "1" o-- "0..*" UsageMetric : tracks
+User "1" o-- "0..*" Raffle : creates
+
+Raffle "1" *-- "0..*" Prize : contains
+Raffle "1" *-- "0..*" Participant : includes
+Raffle "1" *-- "0..*" ImportJob : imports
+Raffle "1" *-- "0..*" Execution : executes
+
+Execution "1" -- "1" Result : produces
+Execution "1" o-- "0..*" RealtimeEvent : emits
+
+Result "1" *-- "0..*" ResultWinner : contains
+
+Participant "1" -- "0..*" ResultWinner : wins
+Prize "0..1" -- "0..*" ResultWinner : awards
+
+User "1" o-- "0..*" AuditLog : generates
+
+@enduml

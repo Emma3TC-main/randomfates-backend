@@ -1,0 +1,262 @@
+@startuml
+title RANDOMFATES - Modelo Lógico de Datos
+
+' =========================================================
+' CONFIGURACIÓN ESTÉTICA
+' =========================================================
+hide circle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam roundcorner 5
+skinparam dpi 150
+skinparam nodesep 100
+skinparam ranksep 80
+
+' PALETA DE COLORES
+!$PRIMARY = "#1e293b"
+!$ACCENT = "#3b82f6"
+!$TEXT = "#334155"
+!$PK_COLOR = "#b45309"
+!$TYPE_COLOR = "#64748b"
+
+skinparam fontname "Verdana"
+skinparam defaultFontSize 12
+
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor $PRIMARY
+    HeaderBackgroundColor $SECONDARY
+    HeaderFontColor #FFFFFF
+    AttributeFontColor $TEXT
+}
+
+skinparam ArrowColor $ACCENT
+skinparam ArrowThickness 1.2
+
+' MACROS PARA DER LÓGICO PURO
+!define PK(x) <b><color:$PK_COLOR>[PK]</color> x</b>
+!define FK(x) <i><color:$ACCENT>[FK]</color> x</i>
+!define T(x) <font color=$TYPE_COLOR>x</font>
+
+' =========================================================
+' MODELO DE DATOS
+' =========================================================
+
+package "Identidad y Acceso" #F8FAFC {
+    class "User" as users {
+        PK(id) : T(ID)
+        --
+        email : T(String) <<UNIQUE>>
+        password_hash : T(String)
+        role : T(Enum)
+        subscription_status : T(Enum)
+        is_active : T(Boolean)
+        --
+        created_at : T(DateTime)
+        updated_at : T(DateTime)
+        deleted_at : T(DateTime)
+    }
+
+    class "Session" as sessions {
+        PK(id) : T(ID)
+        --
+        FK(user_id) : T(ID)
+        refresh_token_hash : T(String)
+        expires_at : T(DateTime)
+        revoked_at : T(DateTime)
+        --
+        created_at : T(DateTime)
+    }
+}
+
+package "Suscripciones y Uso" #F0F9FF {
+    class "Plan" as plans {
+        PK(id) : T(ID)
+        --
+        name : T(String)
+        price : T(Decimal)
+        features : T(Document)
+        --
+        created_at : T(DateTime)
+    }
+
+    class "Subscription" as subscriptions {
+        PK(id) : T(ID)
+        --
+        FK(user_id) : T(ID)
+        FK(plan_id) : T(ID)
+        starts_at : T(DateTime)
+        ends_at : T(DateTime)
+        is_active : T(Boolean)
+        --
+        created_at : T(DateTime)
+    }
+
+    class "Payment" as payments {
+        PK(id) : T(ID)
+        --
+        FK(subscription_id) : T(ID)
+        transaction_reference : T(String)
+        amount : T(Decimal)
+        currency : T(String)
+        status : T(Enum)
+        gateway_response : T(Document)
+        --
+        created_at : T(DateTime)
+    }
+
+    class "UsageMetric" as usage_metrics {
+        PK(id) : T(ID)
+        --
+        FK(user_id) : T(ID)
+        metric_type : T(Enum)
+        metric_value : T(Integer)
+        period_start : T(DateTime)
+        period_end : T(DateTime)
+    }
+}
+
+package "Núcleo de Sorteos" #FFFBEB {
+    class "Raffle" as raffles {
+        PK(id) : T(ID)
+        --
+        FK(user_id) : T(ID)
+        title : T(String)
+        description : T(Text)
+        type : T(Enum)
+        state : T(Enum)
+        configuration : T(Document)
+        metrics : T(Document)
+        public_token : T(String)
+        is_public : T(Boolean)
+        --
+        created_at : T(DateTime)
+        updated_at : T(DateTime)
+        deleted_at : T(DateTime)
+    }
+
+    class "Prize" as prizes {
+        PK(id) : T(ID)
+        --
+        FK(raffle_id) : T(ID)
+        name : T(String)
+        description : T(Text)
+        quantity : T(Integer)
+        --
+        created_at : T(DateTime)
+    }
+
+    class "Participant" as participants {
+        PK(id) : T(ID)
+        --
+        FK(raffle_id) : T(ID)
+        full_name : T(String)
+        identifier : T(String)
+        email : T(String)
+        source : T(Enum)
+        metadata : T(Document)
+        --
+        created_at : T(DateTime)
+        updated_at : T(DateTime)
+        deleted_at : T(DateTime)
+    }
+}
+
+package "Ejecución y Resultados" #F0FDF4 {
+    class "Execution" as executions {
+        PK(id) : T(ID)
+        --
+        FK(raffle_id) : T(ID)
+        status : T(Enum)
+        seed_hash : T(String)
+        duration_ms : T(Integer)
+        started_at : T(DateTime)
+        finished_at : T(DateTime)
+    }
+
+    class "Result" as results {
+        PK(id) : T(ID)
+        --
+        FK(execution_id) : T(ID)
+        verification_hash : T(String)
+        --
+        created_at : T(DateTime)
+    }
+
+    class "ResultWinner" as result_winners {
+        PK(id) : T(ID)
+        --
+        FK(result_id) : T(ID)
+        FK(participant_id) : T(ID)
+        FK(prize_id) : T(ID)
+        position : T(Integer)
+        --
+        created_at : T(DateTime)
+    }
+
+    class "RealtimeEvent" as realtime_events {
+        PK(id) : T(ID)
+        --
+        FK(execution_id) : T(ID)
+        event_type : T(String)
+        payload : T(Document)
+        --
+        created_at : T(DateTime)
+    }
+}
+
+package "Sistema y Auditoría" #F1F5F9 {
+    class "ImportJob" as import_jobs {
+        PK(id) : T(ID)
+        --
+        FK(raffle_id) : T(ID)
+        filename : T(String)
+        status : T(Enum)
+        total_records : T(Integer)
+        processed_records : T(Integer)
+        errors : T(Document)
+        --
+        created_at : T(DateTime)
+    }
+
+    class "AuditLog" as audit_logs {
+        PK(id) : T(ID)
+        --
+        FK(user_id) : T(ID)
+        entity_type : T(String)
+        entity_id : T(ID)
+        action : T(String)
+        payload : T(Document)
+        ip_address : T(String)
+        user_agent : T(String)
+        --
+        created_at : T(DateTime)
+    }
+}
+
+' =========================================================
+' RELACIONES
+' =========================================================
+
+users ||--o{ sessions : owns
+users ||--o{ subscriptions : subscribes
+plans ||--o{ subscriptions : defines
+subscriptions ||--o{ payments : generates
+users ||--o{ raffles : organizes
+users ||--o{ usage_metrics : tracks
+users ||--o{ audit_logs : generates
+
+raffles ||--o{ prizes : contains
+raffles ||--o{ participants : includes
+raffles ||--o{ import_jobs : imports
+raffles ||--o{ executions : executes
+
+executions ||--|| results : produces
+executions ||--o{ realtime_events : emits
+
+results ||--o{ result_winners : contains
+
+participants ||--o{ result_winners : wins
+prizes ||--o{ result_winners : awards
+
+@enduml

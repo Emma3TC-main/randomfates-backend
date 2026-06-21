@@ -1,0 +1,117 @@
+@startuml
+
+' == Configuración Estética (Skinparam) ==
+' Esta sección mejora el aspecto visual sin cambiar la lógica
+
+skinparam Style strictuml
+skinparam BackgroundColor #f0f0f0
+skinparam Shadowing true
+skinparam RoundCorner 8
+
+' Configuración de la tipografía y colores globales
+skinparam DefaultFontName "Arial"
+skinparam DefaultFontSize 12
+skinparam DefaultFontColor #333333
+
+' Configuración de los Actores (Organizador)
+skinparam Actor {
+    BackgroundColor #e0f7fa
+    BorderColor #006064
+}
+
+' Configuración de los Participantes (FE, API, DB, etc.)
+skinparam Participant {
+    ' Degradado de azul profesional
+    BackgroundColor #ffffff-#e3f2fd
+    BorderColor #1565c0
+    FontColor #0d47a1
+    FontStyle bold
+}
+
+' Configuración de las Flechas de secuencia
+skinparam Sequence {
+    ' Flechas de solicitud (sólidas)
+    ArrowColor #1565c0
+    
+    ' Flechas de respuesta (punteadas)
+    ArrowFontColor #d32f2f
+    ArrowLollipopColor #d32f2f
+    ' Cambiar el color de las líneas de respuesta para diferenciarlas
+    LifeLineBorderColor #1565c0
+    LifeLineBackgroundColor #e3f2fd
+}
+
+' Color para las líneas de respuesta específicamente
+skinparam SequenceResponse {
+    ArrowColor #d32f2f
+}
+
+' == Inicio del Diagrama (Lógica Intacta) ==
+
+actor Organizador
+participant FE
+participant API
+participant AUTH
+participant RAFFLE
+participant EXEC
+participant RNG
+participant DB
+participant WS
+
+Organizador -> FE : Iniciar sorteo
+activate FE
+FE -> API : POST execute (JWT)
+activate API
+
+API -> AUTH : validar JWT
+activate AUTH
+AUTH --> API : OK
+deactivate AUTH
+
+API -> RAFFLE : validar estado
+activate RAFFLE
+RAFFLE -> DB : get raffle
+activate DB
+DB --> RAFFLE
+deactivate DB
+deactivate RAFFLE
+
+RAFFLE -> DB : get participantes
+activate RAFFLE
+activate DB
+DB --> RAFFLE
+deactivate DB
+deactivate RAFFLE
+
+API -> EXEC : crear ejecución
+activate EXEC
+EXEC -> DB : insert ejecución
+activate DB
+deactivate DB
+
+EXEC -> RNG : generar ganador
+activate RNG
+RNG --> EXEC
+deactivate RNG
+
+EXEC -> DB : guardar resultado
+activate DB
+deactivate DB
+
+EXEC -> WS : emitir evento
+activate WS
+WS --> FE
+deactivate WS
+
+FE -> FE : animación
+
+EXEC -> DB : actualizar estado
+activate DB
+deactivate DB
+
+API --> FE : resultado
+deactivate EXEC
+deactivate API
+deactivate FE
+
+@enduml

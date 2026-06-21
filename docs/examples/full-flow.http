@@ -1,0 +1,71 @@
+### Health
+GET http://localhost:3000/v1/health
+
+### Register
+POST http://localhost:3000/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "organizador@randomfates.test",
+  "password": "Password123"
+}
+
+### Login
+POST http://localhost:3000/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "organizador@randomfates.test",
+  "password": "Password123"
+}
+
+### Crear sorteo
+POST http://localhost:3000/v1/raffles
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Sorteo lanzamiento RandomFates",
+  "description": "Demo de ruleta verificable",
+  "type": "ROULETTE",
+  "configuration": {
+    "winnersCount": 1,
+    "animation": "roulette"
+  },
+  "isPublic": true
+}
+
+### Crear premio
+POST http://localhost:3000/v1/raffles/{{raffleId}}/prizes
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Gift card",
+  "description": "Premio principal",
+  "quantity": 1
+}
+
+### Carga masiva de participantes
+POST http://localhost:3000/v1/raffles/{{raffleId}}/participants/bulk
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "filename": "participantes-demo.json",
+  "participants": [
+    { "fullName": "Ana Torres", "identifier": "DNI-001", "email": "ana@test.com" },
+    { "fullName": "Luis Rojas", "identifier": "DNI-002", "email": "luis@test.com" }
+  ]
+}
+
+### Publicar
+POST http://localhost:3000/v1/raffles/{{raffleId}}/publish
+Authorization: Bearer {{accessToken}}
+
+### Ejecutar
+POST http://localhost:3000/v1/raffles/{{raffleId}}/executions
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{}

@@ -1,0 +1,45 @@
+@startuml
+skinparam {
+    Style strictuml
+    Shadowing true
+    RoundCorner 10
+    DefaultFontName "Segoe UI", "Arial", sans-serif
+    DefaultFontSize 12
+}
+
+' Estilo naranja para procesos de motor
+skinparam state {
+    BackgroundColor #FFFFFF-#FFF3E0
+    BorderColor #E65100
+    FontColor #BF360C
+}
+
+title Flujo Transaccional de Ejecución
+
+[*] --> PENDIENTE
+
+state PENDIENTE #FAFAFA
+state VALIDANDO #E1F5FE
+state EN_PROCESO #FFF3E0
+state EMITIENDO_RESULTADO #F3E5F5
+state COMPLETADO #E8F5E9
+state FALLIDO #FFEBEE
+state CANCELADO #FFCCBC
+
+PENDIENTE --> VALIDANDO : Iniciar ejecución
+
+VALIDANDO --> EN_PROCESO : Datos íntegros
+VALIDANDO --> FALLIDO : Error de validación
+VALIDANDO --> CANCELADO : Aborto manual
+
+EN_PROCESO --> EMITIENDO_RESULTADO : Ganador seleccionado (RNG)
+EN_PROCESO --> FALLIDO : Error en motor/lógica
+EN_PROCESO --> CANCELADO : Interrupción de sistema
+
+EMITIENDO_RESULTADO --> COMPLETADO : Evento WS confirmado
+EMITIENDO_RESULTADO --> FALLIDO : Error de red / Sincronización
+
+COMPLETADO --> [*]
+FALLIDO --> [*]
+CANCELADO --> [*]
+@enduml
