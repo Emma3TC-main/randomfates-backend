@@ -19,6 +19,9 @@ export const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "15m",
   refreshTokenDays: numberFromEnv("REFRESH_TOKEN_DAYS", 7),
   bcryptSaltRounds: numberFromEnv("BCRYPT_SALT_ROUNDS", 10),
+  otpExpiresMinutes: numberFromEnv("OTP_EXPIRES_MINUTES", 5),
+  otpMaxAttempts: numberFromEnv("OTP_MAX_ATTEMPTS", 5),
+  otpPepper: process.env.OTP_PEPPER ?? "dev-only-otp-pepper-change-me",
 };
 
 export const isProduction = env.nodeEnv === "production";

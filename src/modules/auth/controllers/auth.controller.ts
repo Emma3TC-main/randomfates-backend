@@ -7,6 +7,8 @@ import {
   logoutSchema,
   refreshSchema,
   registerSchema,
+  resendOtpSchema,
+  verifyOtpSchema,
 } from "../validators/auth.schemas";
 
 export const authController = {
@@ -41,5 +43,17 @@ export const authController = {
     if (!req.authUser) throw new UnauthorizedException();
     const user = await authService.me(req.authUser.id);
     res.json(successResponse("Usuario autenticado", user));
+  },
+
+  async verifyOtp(req: Request, res: Response): Promise<void> {
+    const input = verifyOtpSchema.parse(req.body);
+    const data = await authService.verifyOtp(input);
+    res.json(successResponse("OTP verificado correctamente", data));
+  },
+
+  async resendOtp(req: Request, res: Response): Promise<void> {
+    const input = resendOtpSchema.parse(req.body);
+    const data = await authService.resendOtp(input);
+    res.json(successResponse("OTP reenviado correctamente", data));
   },
 };

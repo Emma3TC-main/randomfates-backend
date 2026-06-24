@@ -45,10 +45,13 @@ Base local: `http://localhost:3000/v1`
 | Método | Endpoint | Auth | Uso |
 |---|---|---:|---|
 | POST | `/auth/register` | No | Registrar organizador |
-| POST | `/auth/login` | No | Login con JWT |
+| POST | `/auth/login` | No | Valida credenciales e inicia desafío OTP |
 | POST | `/auth/refresh` | No | Renovar access token |
 | POST | `/auth/logout` | Sí | Revocar sesión |
 | GET | `/auth/me` | Sí | Obtener usuario autenticado |
+| POST | `/auth/otp/verify` | No | Verifica OTP y emite JWT |
+| POST | `/auth/otp/resend` | No | Reenvía OTP y genera nuevo desafío |
+
 
 ## Sorteos
 

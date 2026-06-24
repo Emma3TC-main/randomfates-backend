@@ -61,6 +61,12 @@ enum ImportJobStatus {
   FAILED
 }
 
+enum AuthOtpPurpose {
+  LOGIN_MFA
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
 model User {
   id                 String             @id @default(uuid()) @db.Uuid
   email              String             @unique @db.VarChar(255)
@@ -72,11 +78,12 @@ model User {
   updatedAt          DateTime?          @updatedAt @map("updated_at") @db.Timestamptz
   deletedAt          DateTime?          @map("deleted_at") @db.Timestamptz
 
-  sessions           Session[]
-  subscriptions      Subscription[]
-  usageMetrics       UsageMetric[]
-  raffles            Raffle[]
-  auditLogs          AuditLog[]
+  sessions      Session[]
+  subscriptions Subscription[]
+  usageMetrics  UsageMetric[]
+  raffles       Raffle[]
+  auditLogs     AuditLog[]
+  otpChallenges AuthOtpChallenge[]
 
   @@map("users")
 }
@@ -89,18 +96,18 @@ model Session {
   revokedAt        DateTime? @map("revoked_at") @db.Timestamptz
   createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
-  user             User      @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@map("sessions")
 }
 
 model Plan {
-  id            String         @id @default(uuid()) @db.Uuid
-  name          String         @db.VarChar(100)
-  price         Decimal        @db.Decimal(10, 2)
-  features      Json
-  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(100)
+  price     Decimal  @db.Decimal(10, 2)
+  features  Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   subscriptions Subscription[]
 
@@ -108,17 +115,17 @@ model Plan {
 }
 
 model Subscription {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @map("user_id") @db.Uuid
-  planId    String    @map("plan_id") @db.Uuid
-  startsAt  DateTime  @map("starts_at") @db.Timestamptz
-  endsAt    DateTime  @map("ends_at") @db.Timestamptz
-  isActive  Boolean   @default(true) @map("is_active")
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  planId    String   @map("plan_id") @db.Uuid
+  startsAt  DateTime @map("starts_at") @db.Timestamptz
+  endsAt    DateTime @map("ends_at") @db.Timestamptz
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  user      User      @relation(fields: [userId], references: [id])
-  plan      Plan      @relation(fields: [planId], references: [id])
-  payments  Payment[]
+  user     User      @relation(fields: [userId], references: [id])
+  plan     Plan      @relation(fields: [planId], references: [id])
+  payments Payment[]
 
   @@index([userId, isActive])
   @@index([planId])
@@ -135,7 +142,7 @@ model Payment {
   gatewayResponse      Json?         @map("gateway_response")
   createdAt            DateTime      @default(now()) @map("created_at") @db.Timestamptz
 
-  subscription         Subscription  @relation(fields: [subscriptionId], references: [id])
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
 
   @@unique([transactionReference])
   @@index([subscriptionId])
@@ -150,47 +157,47 @@ model UsageMetric {
   periodStart DateTime? @map("period_start") @db.Timestamptz
   periodEnd   DateTime? @map("period_end") @db.Timestamptz
 
-  user        User      @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@index([userId, metricType])
   @@map("usage_metrics")
 }
 
 model Raffle {
-  id            String        @id @default(uuid()) @db.Uuid
-  userId        String        @map("user_id") @db.Uuid
-  title         String        @db.VarChar(150)
-  description   String?       @db.Text
+  id            String      @id @default(uuid()) @db.Uuid
+  userId        String      @map("user_id") @db.Uuid
+  title         String      @db.VarChar(150)
+  description   String?     @db.Text
   type          RaffleType
-  state         RaffleState   @default(DRAFT)
+  state         RaffleState @default(DRAFT)
   configuration Json?
   metrics       Json?
-  publicToken   String?       @unique @map("public_token") @db.VarChar(255)
-  isPublic      Boolean       @default(false) @map("is_public")
-  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime?     @updatedAt @map("updated_at") @db.Timestamptz
-  deletedAt     DateTime?     @map("deleted_at") @db.Timestamptz
+  publicToken   String?     @unique @map("public_token") @db.VarChar(255)
+  isPublic      Boolean     @default(false) @map("is_public")
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime?   @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt     DateTime?   @map("deleted_at") @db.Timestamptz
 
-  user          User          @relation(fields: [userId], references: [id])
-  prizes        Prize[]
-  participants  Participant[]
-  importJobs    ImportJob[]
-  executions    Execution[]
+  user         User          @relation(fields: [userId], references: [id])
+  prizes       Prize[]
+  participants Participant[]
+  importJobs   ImportJob[]
+  executions   Execution[]
 
   @@index([userId, state])
   @@map("raffles")
 }
 
 model Prize {
-  id          String         @id @default(uuid()) @db.Uuid
-  raffleId    String         @map("raffle_id") @db.Uuid
-  name        String         @db.VarChar(150)
-  description String?        @db.Text
-  quantity    Int            @default(1)
-  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  id          String   @id @default(uuid()) @db.Uuid
+  raffleId    String   @map("raffle_id") @db.Uuid
+  name        String   @db.VarChar(150)
+  description String?  @db.Text
+  quantity    Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  raffle      Raffle         @relation(fields: [raffleId], references: [id])
-  winners     ResultWinner[]
+  raffle  Raffle         @relation(fields: [raffleId], references: [id])
+  winners ResultWinner[]
 
   @@index([raffleId])
   @@map("prizes")
@@ -208,8 +215,8 @@ model Participant {
   updatedAt  DateTime?         @updatedAt @map("updated_at") @db.Timestamptz
   deletedAt  DateTime?         @map("deleted_at") @db.Timestamptz
 
-  raffle     Raffle            @relation(fields: [raffleId], references: [id])
-  wins       ResultWinner[]
+  raffle Raffle         @relation(fields: [raffleId], references: [id])
+  wins   ResultWinner[]
 
   @@unique([raffleId, identifier])
   @@index([raffleId])
@@ -226,53 +233,53 @@ model ImportJob {
   errors           Json?
   createdAt        DateTime        @default(now()) @map("created_at") @db.Timestamptz
 
-  raffle           Raffle          @relation(fields: [raffleId], references: [id])
+  raffle Raffle @relation(fields: [raffleId], references: [id])
 
   @@index([raffleId])
   @@map("import_jobs")
 }
 
 model Execution {
-  id          String           @id @default(uuid()) @db.Uuid
-  raffleId    String           @map("raffle_id") @db.Uuid
-  status      ExecutionStatus  @default(PENDING)
-  seedHash    String?          @map("seed_hash") @db.Text
-  durationMs  Int?             @map("duration_ms")
-  startedAt   DateTime         @default(now()) @map("started_at") @db.Timestamptz
-  finishedAt  DateTime?        @map("finished_at") @db.Timestamptz
+  id         String          @id @default(uuid()) @db.Uuid
+  raffleId   String          @map("raffle_id") @db.Uuid
+  status     ExecutionStatus @default(PENDING)
+  seedHash   String?         @map("seed_hash") @db.Text
+  durationMs Int?            @map("duration_ms")
+  startedAt  DateTime        @default(now()) @map("started_at") @db.Timestamptz
+  finishedAt DateTime?       @map("finished_at") @db.Timestamptz
 
-  raffle      Raffle           @relation(fields: [raffleId], references: [id])
-  result      Result?
-  events      RealtimeEvent[]
+  raffle Raffle          @relation(fields: [raffleId], references: [id])
+  result Result?
+  events RealtimeEvent[]
 
   @@index([raffleId, status])
   @@map("executions")
 }
 
 model Result {
-  id               String         @id @default(uuid()) @db.Uuid
-  executionId      String         @unique @map("execution_id") @db.Uuid
-  verificationHash String         @map("verification_hash") @db.Text
-  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  id               String   @id @default(uuid()) @db.Uuid
+  executionId      String   @unique @map("execution_id") @db.Uuid
+  verificationHash String   @map("verification_hash") @db.Text
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  execution        Execution      @relation(fields: [executionId], references: [id])
-  winners          ResultWinner[]
+  execution Execution      @relation(fields: [executionId], references: [id])
+  winners   ResultWinner[]
 
   @@index([verificationHash])
   @@map("results")
 }
 
 model ResultWinner {
-  id            String      @id @default(uuid()) @db.Uuid
-  resultId      String      @map("result_id") @db.Uuid
-  participantId String      @map("participant_id") @db.Uuid
-  prizeId       String?     @map("prize_id") @db.Uuid
-  position      Int         @default(1)
-  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  id            String   @id @default(uuid()) @db.Uuid
+  resultId      String   @map("result_id") @db.Uuid
+  participantId String   @map("participant_id") @db.Uuid
+  prizeId       String?  @map("prize_id") @db.Uuid
+  position      Int      @default(1)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  result        Result      @relation(fields: [resultId], references: [id])
-  participant   Participant @relation(fields: [participantId], references: [id])
-  prize         Prize?      @relation(fields: [prizeId], references: [id])
+  result      Result      @relation(fields: [resultId], references: [id])
+  participant Participant @relation(fields: [participantId], references: [id])
+  prize       Prize?      @relation(fields: [prizeId], references: [id])
 
   @@unique([resultId, position])
   @@unique([resultId, participantId])
@@ -281,17 +288,17 @@ model ResultWinner {
 }
 
 model AuditLog {
-  id         String    @id @default(uuid()) @db.Uuid
-  userId     String?   @map("user_id") @db.Uuid
-  entityType String    @map("entity_type") @db.VarChar(100)
-  entityId   String    @map("entity_id") @db.Uuid
-  action     String    @db.VarChar(100)
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  entityType String   @map("entity_type") @db.VarChar(100)
+  entityId   String   @map("entity_id") @db.Uuid
+  action     String   @db.VarChar(100)
   payload    Json?
-  ipAddress  String?   @map("ip_address") @db.VarChar(100)
-  userAgent  String?   @map("user_agent") @db.Text
-  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  ipAddress  String?  @map("ip_address") @db.VarChar(100)
+  userAgent  String?  @map("user_agent") @db.Text
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  user       User?     @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id])
 
   @@index([entityType, entityId])
   @@index([userId])
@@ -299,14 +306,34 @@ model AuditLog {
 }
 
 model RealtimeEvent {
-  id          String    @id @default(uuid()) @db.Uuid
-  executionId String    @map("execution_id") @db.Uuid
-  eventType   String    @map("event_type") @db.VarChar(100)
+  id          String   @id @default(uuid()) @db.Uuid
+  executionId String   @map("execution_id") @db.Uuid
+  eventType   String   @map("event_type") @db.VarChar(100)
   payload     Json?
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  execution   Execution @relation(fields: [executionId], references: [id])
+  execution Execution @relation(fields: [executionId], references: [id])
 
   @@index([executionId, eventType])
   @@map("realtime_events")
+}
+
+model AuthOtpChallenge {
+  id             String         @id @default(uuid()) @db.Uuid
+  userId         String         @map("user_id") @db.Uuid
+  challengeToken String         @unique @map("challenge_token") @db.Text
+  otpHash        String         @map("otp_hash") @db.Text
+  purpose        AuthOtpPurpose @default(LOGIN_MFA)
+  attempts       Int            @default(0)
+  maxAttempts    Int            @default(5) @map("max_attempts")
+  expiresAt      DateTime       @map("expires_at") @db.Timestamptz
+  consumedAt     DateTime?      @map("consumed_at") @db.Timestamptz
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, purpose])
+  @@index([challengeToken])
+  @@index([expiresAt])
+  @@map("auth_otp_challenges")
 }
