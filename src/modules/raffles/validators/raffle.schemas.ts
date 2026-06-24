@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { RaffleType } from "../../../shared/enums/domain.enums";
+import { RaffleState, RaffleType } from "../../../shared/enums/domain.enums";
 
 export const raffleConfigurationSchema = z
   .object({
@@ -25,7 +25,14 @@ export const updateRaffleSchema = createRaffleSchema.partial();
 export const listRafflesQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
-  state: z.string().trim().optional(),
+  state: z
+    .enum([
+      RaffleState.DRAFT,
+      RaffleState.ACTIVE,
+      RaffleState.FINISHED,
+      RaffleState.CANCELLED,
+    ])
+    .optional(),
 });
 
 export type CreateRaffleInput = z.infer<typeof createRaffleSchema>;

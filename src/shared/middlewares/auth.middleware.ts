@@ -29,6 +29,7 @@ export const authenticate = (
       email: payload.email,
       role: payload.role,
       subscriptionStatus: payload.subscriptionStatus,
+      mfaVerifiedAt: payload.mfaVerifiedAt,
     };
     next();
   } catch (_error) {

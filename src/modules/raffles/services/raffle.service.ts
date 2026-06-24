@@ -1,5 +1,9 @@
 import { prisma } from "../../../infrastructure/prisma/prisma.client";
-import { RaffleState } from "../../../shared/enums/domain.enums";
+import { Prisma } from "../../../generated/prisma/client";
+import {
+  RaffleState,
+  type RaffleStateValue,
+} from "../../../shared/enums/domain.enums";
 import {
   ConflictException,
   ForbiddenException,
@@ -19,7 +23,7 @@ const includeRaffle = {
       executions: true,
     },
   },
-};
+} satisfies Prisma.RaffleInclude;
 
 const ensureOwnership = (raffle: any, userId: string, role?: string) => {
   if (role === "ADMIN") return;
@@ -38,11 +42,11 @@ export const raffleService = {
         title: input.title,
         description: input.description,
         type: input.type,
-        configuration: input.configuration,
+        configuration: input.configuration as Prisma.InputJsonValue,
         isPublic: input.isPublic ?? false,
         publicToken: input.isPublic ? generatePublicToken() : null,
         state: RaffleState.DRAFT,
-        metrics: { participants: 0, executions: 0 },
+        metrics: { participants: 0, executions: 0 } as Prisma.InputJsonValue,
       },
       include: includeRaffle,
     });
@@ -51,10 +55,10 @@ export const raffleService = {
   async list(
     userId: string,
     role: string,
-    params: { page: number; limit: number; state?: string },
+    params: { page: number; limit: number; state?: RaffleStateValue },
   ) {
     const skip = (params.page - 1) * params.limit;
-    const where = {
+    const where: Prisma.RaffleWhereInput = {
       deletedAt: null,
       ...(role === "ADMIN" ? {} : { userId }),
       ...(params.state ? { state: params.state } : {}),
@@ -123,15 +127,25 @@ export const raffleService = {
       throw new ConflictException("El sorteo ya no permite modificaciones");
     }
 
+    const data: Prisma.RaffleUpdateInput = {
+      ...(input.title !== undefined ? { title: input.title } : {}),
+      ...(input.description !== undefined
+        ? { description: input.description }
+        : {}),
+      ...(input.type !== undefined ? { type: input.type } : {}),
+      ...(input.configuration !== undefined
+        ? { configuration: input.configuration as Prisma.InputJsonValue }
+        : {}),
+      ...(input.isPublic !== undefined ? { isPublic: input.isPublic } : {}),
+      publicToken:
+        input.isPublic === true && !raffle.publicToken
+          ? generatePublicToken()
+          : raffle.publicToken,
+    };
+
     return prisma.raffle.update({
       where: { id },
-      data: {
-        ...input,
-        publicToken:
-          input.isPublic === true && !raffle.publicToken
-            ? generatePublicToken()
-            : raffle.publicToken,
-      },
+      data,
       include: includeRaffle,
     });
   },
@@ -166,7 +180,10 @@ export const raffleService = {
         state: RaffleState.ACTIVE,
         isPublic: true,
         publicToken: raffle.publicToken ?? generatePublicToken(),
-        metrics: { participants: participantsCount, prizes: prizesCount },
+        metrics: {
+          participants: participantsCount,
+          prizes: prizesCount,
+        } as Prisma.InputJsonValue,
       },
       include: includeRaffle,
     });

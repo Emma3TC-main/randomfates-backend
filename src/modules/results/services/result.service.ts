@@ -1,4 +1,5 @@
 import { prisma } from "../../../infrastructure/prisma/prisma.client";
+import { Prisma } from "../../../generated/prisma/client";
 import {
   ForbiddenException,
   NotFoundException,
@@ -8,9 +9,9 @@ const resultInclude = {
   execution: { include: { raffle: true } },
   winners: {
     include: { participant: true, prize: true },
-    orderBy: { position: "asc" },
+    orderBy: { position: Prisma.SortOrder.asc },
   },
-};
+} satisfies Prisma.ResultInclude;
 
 export const resultService = {
   async getById(id: string, userId: string, role?: string) {
@@ -61,7 +62,7 @@ export const resultService = {
         execution: true,
         winners: {
           include: { participant: true, prize: true },
-          orderBy: { position: "asc" },
+          orderBy: { position: Prisma.SortOrder.asc },
         },
       },
     });

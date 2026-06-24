@@ -8,6 +8,7 @@ declare global {
         email: string;
         role: UserRoleValue;
         subscriptionStatus: string;
+        mfaVerifiedAt?: string;
       };
     }
   }

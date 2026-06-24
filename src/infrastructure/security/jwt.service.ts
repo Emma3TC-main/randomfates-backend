@@ -7,11 +7,14 @@ type AccessTokenPayload = {
   email: string;
   role: UserRoleValue;
   subscriptionStatus: string;
+  mfaVerifiedAt?: string;
 };
 
 export const jwtService = {
   signAccessToken(payload: AccessTokenPayload): string {
-    return jwt.sign(payload, env.jwtSecret, { expiresIn: env.jwtExpiresIn as any });
+    return jwt.sign(payload, env.jwtSecret, {
+      expiresIn: env.jwtExpiresIn as any,
+    });
   },
 
   verifyAccessToken(token: string): AccessTokenPayload {

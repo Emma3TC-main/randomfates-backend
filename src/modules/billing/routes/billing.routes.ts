@@ -6,6 +6,8 @@ import {
 import { UserRole } from "../../../shared/enums/domain.enums";
 import { asyncHandler } from "../../../shared/utils/async-handler";
 import { billingController } from "../controllers/billing.controller";
+import { requireRecentMfa } from "../../../shared/middlewares/admin-security.middleware";
+import { adminRateLimit } from "../../../shared/middlewares/rate-limit-middleware";
 
 export const billingRouter = Router();
 
@@ -13,7 +15,9 @@ billingRouter.get("/billing/plans", asyncHandler(billingController.listPlans));
 billingRouter.post(
   "/billing/plans",
   authenticate,
+  adminRateLimit,
   authorize(UserRole.ADMIN),
+  requireRecentMfa(15),
   asyncHandler(billingController.createPlan),
 );
 billingRouter.post(
@@ -29,6 +33,8 @@ billingRouter.get(
 billingRouter.post(
   "/billing/payments/mock-approve",
   authenticate,
+  adminRateLimit,
   authorize(UserRole.ADMIN),
+  requireRecentMfa(15),
   asyncHandler(billingController.approvePayment),
 );

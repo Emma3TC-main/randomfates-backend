@@ -1,18 +1,16 @@
 import { Resend } from "resend";
+import { env } from "../../config/env";
 
 // Inicializamos Resend con la variable de entorno
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
-  : null;
-const mailFrom = process.env.MAIL_FROM || "onboarding@resend.dev";
+const resend = env.resendApiKey ? new Resend(env.resendApiKey) : null;
+const mailFrom = env.mailFrom;
 
 export const mailService = {
   async sendOtpEmail(to: string, otp: string): Promise<void> {
     // 💡 CAMBIO DE SEGURIDAD:
     // Cambia esto a 'true' si quieres forzar que envíe correos reales desde tu PC (Local)
     // Cambia esto a 'process.env.NODE_ENV === "production"' cuando vayas a subir el proyecto a internet.
-    const FORCE_REAL_EMAIL_IN_DEV = true;
-
+    const FORCE_REAL_EMAIL_IN_DEV = env.forceRealEmailInDev;
     // 1. MODO DESARROLLO (Solo por consola si no hay API key o si desactivas la fuerza)
     if (
       !resend ||

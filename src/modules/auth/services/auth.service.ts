@@ -36,12 +36,13 @@ const safeUserSelect = {
   createdAt: true,
 };
 
-const buildTokens = async (user: any) => {
+const buildTokens = async (user: any, options?: { mfaVerifiedAt?: string }) => {
   const accessToken = jwtService.signAccessToken({
     sub: user.id,
     email: user.email,
     role: user.role,
     subscriptionStatus: user.subscriptionStatus,
+    ...(options?.mfaVerifiedAt ? { mfaVerifiedAt: options.mfaVerifiedAt } : {}),
   });
 
   const refreshToken = generateRefreshToken();
@@ -223,7 +224,9 @@ export const authService = {
       },
     });
 
-    const tokens = await buildTokens(challenge.user);
+    const tokens = await buildTokens(challenge.user, {
+      mfaVerifiedAt: new Date().toISOString(),
+    });
 
     return {
       user: {

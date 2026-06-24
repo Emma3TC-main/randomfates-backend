@@ -1,4 +1,5 @@
 import { prisma } from "../../../infrastructure/prisma/prisma.client";
+import { Prisma } from "../../../generated/prisma/client";
 import { RaffleState } from "../../../shared/enums/domain.enums";
 import {
   BadRequestException,
@@ -62,7 +63,7 @@ export const participantService = {
           identifier: input.identifier,
           email: input.email,
           source: input.source,
-          metadata: input.metadata ?? {},
+          metadata: (input.metadata ?? {}) as Prisma.InputJsonValue,
         },
       });
     } catch (error) {
@@ -87,15 +88,30 @@ export const participantService = {
       throw new ForbiddenException("No puedes consultar este sorteo");
 
     const skip = (params.page - 1) * params.limit;
-    const where = {
+    const where: Prisma.ParticipantWhereInput = {
       raffleId,
       deletedAt: null,
       ...(params.search
         ? {
             OR: [
-              { fullName: { contains: params.search, mode: "insensitive" } },
-              { identifier: { contains: params.search, mode: "insensitive" } },
-              { email: { contains: params.search, mode: "insensitive" } },
+              {
+                fullName: {
+                  contains: params.search,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+              {
+                identifier: {
+                  contains: params.search,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+              {
+                email: {
+                  contains: params.search,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
             ],
           }
         : {}),
@@ -176,7 +192,7 @@ export const participantService = {
           identifier: participant.identifier,
           email: participant.email,
           source: participant.source,
-          metadata: participant.metadata ?? {},
+          metadata: (participant.metadata ?? {}) as Prisma.InputJsonValue,
         })),
       });
 

@@ -1,4 +1,5 @@
 import { prisma } from "../../../infrastructure/prisma/prisma.client";
+import { Prisma } from "../../../generated/prisma/client";
 import { DomainEvent } from "../../../infrastructure/events/domain-events";
 import {
   PaymentStatus,
@@ -17,7 +18,13 @@ import type {
 
 export const billingService = {
   async createPlan(input: CreatePlanInput) {
-    return prisma.plan.create({ data: input });
+    return prisma.plan.create({
+      data: {
+        name: input.name,
+        price: input.price,
+        features: input.features as Prisma.InputJsonValue,
+      },
+    });
   },
 
   async listPlans() {
@@ -73,7 +80,7 @@ export const billingService = {
           amount: subscription.plan.price,
           currency: "PEN",
           status: PaymentStatus.SUCCESS,
-          gatewayResponse: input.gatewayResponse,
+          gatewayResponse: input.gatewayResponse as Prisma.InputJsonValue,
         },
       });
 
@@ -98,7 +105,7 @@ export const billingService = {
           payload: {
             paymentId: createdPayment.id,
             transactionReference: input.transactionReference,
-          },
+          } as Prisma.InputJsonValue,
         },
       });
 
