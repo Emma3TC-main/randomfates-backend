@@ -26,5 +26,5 @@ auditRouter.get(
   adminRateLimit,
   authorize(UserRole.ADMIN),
   requireRecentMfa(15),
-  asyncHandler(auditController.list),
+  asyncHandler(auditController.kpis),
 );
