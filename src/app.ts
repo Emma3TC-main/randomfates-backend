@@ -19,6 +19,7 @@ import { billingRouter } from "./modules/billing/routes/billing.routes";
 import { auditRouter } from "./modules/audit/routes/audit.routes";
 
 const app = express();
+app.set("trust proxy", 1);
 
 app.use(helmet());
 app.use(
